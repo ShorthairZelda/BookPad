@@ -25,6 +25,12 @@ final class BookPadDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private let reverse = NSButton(checkboxWithTitle: "反转翻页方向（适用于反向排版书籍）", target: nil, action: nil)
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Explicitly update the running Dock tile as well as the bundle's Finder icon.
+        // Launch Services can retain a generic icon after an in-place local rebuild.
+        if let iconURL = Bundle.main.url(forResource: "BookPad", withExtension: "png"),
+           let icon = NSImage(contentsOf: iconURL) {
+            NSApp.applicationIconImage = icon
+        }
         GCController.shouldMonitorBackgroundEvents = true
         buildMenu()
         buildWindow()
@@ -42,7 +48,14 @@ final class BookPadDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         appMenu.addItem(root)
         NSApp.mainMenu = appMenu
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        statusItem.button?.image = NSImage(systemSymbolName: "gamecontroller", accessibilityDescription: "BookPad")
+        if let image = NSImage(named: "MenuBar") {
+            image.isTemplate = true
+            image.size = NSSize(width: 22, height: 22)
+            statusItem.button?.image = image
+        } else {
+            statusItem.button?.image = NSImage(systemSymbolName: "gamecontroller", accessibilityDescription: "BookPad")
+        }
+        statusItem.button?.toolTip = "BookPad · 手柄翻书"
         let menu = NSMenu()
         menu.addItem(withTitle: "显示 BookPad", action: #selector(showWindow), keyEquivalent: "").target = self
         menu.addItem(withTitle: "打开图书", action: #selector(openBooks), keyEquivalent: "").target = self
@@ -62,6 +75,17 @@ final class BookPadDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         let content = window.contentView!
         let title = NSTextField(labelWithString: "用手柄，舒服地读书。")
         title.font = .systemFont(ofSize: 25, weight: .semibold)
+        let logo = NSImageView()
+        logo.image = NSImage(named: "BookPad")
+        logo.imageScaling = .scaleProportionallyUpOrDown
+        logo.setAccessibilityLabel("BookPad：手柄与打开的书本")
+        logo.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([logo.widthAnchor.constraint(equalToConstant: 52),
+                                     logo.heightAnchor.constraint(equalToConstant: 52)])
+        let heading = NSStackView(views: [logo, title])
+        heading.orientation = .horizontal
+        heading.alignment = .centerY
+        heading.spacing = 12
         let intro = NSTextField(wrappingLabelWithString: "L1 / R1 轻按翻页，L2 / R2 深按跳章节。两个摇杆横向翻页；右摇杆上下调字号。所有操作单次触发。")
         intro.font = .systemFont(ofSize: 14)
         toggle.state = .on
@@ -88,7 +112,7 @@ final class BookPadDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         permissionLabel.font = .systemFont(ofSize: 13)
         activityLabel.font = .systemFont(ofSize: 13)
         eventLabel.textColor = .secondaryLabelColor
-        let stack = NSStackView(views: [title, intro, mapping, toggle, reverse, controllerLabel,
+        let stack = NSStackView(views: [heading, intro, mapping, toggle, reverse, controllerLabel,
                                         permissionLabel, activityLabel, eventLabel, buttons, help])
         stack.orientation = .vertical
         stack.alignment = .leading

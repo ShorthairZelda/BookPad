@@ -1,4 +1,6 @@
-# BookPad 1.1 · 手柄阅读控制
+# BookPad 1.1.1 · 手柄阅读控制
+
+<img src="Assets/BookPad.png" alt="BookPad：手柄叠加打开的书本" width="160">
 
 原生 Swift / AppKit / Apple GameController 应用，无第三方依赖。此构建适用于 Apple 芯片 Mac，macOS 13 或更高版本。
 
@@ -61,5 +63,6 @@
 - `ReadingAction.swift`：动作、快捷键、按钮与扳机防重复逻辑。
 - `main.swift`：界面、手柄轮询、前台检查及图书按键发送。
 - `Tests/main.swift`：输入与映射测试。
+- `Assets/GenerateIcon.swift`：手柄与书本叠加的图标矢量绘制源码。在仓库根目录运行 `xcrun swift Assets/GenerateIcon.swift` 可生成 PNG、菜单栏模板图及多分辨率 ICNS；之后运行构建脚本即可更新应用图标。
 
 已通过本机编译、签名验证、32 项测试和界面检查。新版全部手柄按键在图书中的实际效果尚需重新授权并连接手柄后逐项验证。
